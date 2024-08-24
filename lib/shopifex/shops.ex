@@ -157,7 +157,10 @@ defmodule Shopifex.Shops do
     end
   end
 
-  defp create_webhook(shop, topic) do
+  @doc """
+  Creates a webhook subscription for a shop given a topic
+  """
+  def create_webhook(shop, topic) do
     with {:ok, %HTTPoison.Response{status_code: 201, body: body}} <-
            HTTPoison.post(
              "https://#{Shopifex.Shops.get_url(shop)}/admin/api/2024-01/webhooks.json",
