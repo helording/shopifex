@@ -33,6 +33,18 @@ defmodule ShopifexWeb.AuthController do
   @callback after_install(Plug.Conn.t(), shop(), oauth_state :: String.t()) :: Plug.Conn.t()
 
   @doc """
+  An optional callback for handling the configuration of webhooks.
+
+  ## Example
+
+      @impl true
+      def configure_webhooks(shop) do
+        # handle webhook subscriptions
+      end
+  """
+  @callback configure_webhooks(shop()) :: any()
+
+  @doc """
   An optional callback called after the oauth update is completed. By default,
   this function redirects the user to the app within their Shopify admin panel.
 
@@ -77,7 +89,11 @@ defmodule ShopifexWeb.AuthController do
   """
   @callback auth(conn :: Plug.Conn.t(), params :: Plug.Conn.params()) :: Plug.Conn.t()
 
-  @optional_callbacks after_install: 3, after_update: 3, insert_shop: 1, auth: 2
+  @optional_callbacks after_install: 3,
+                      after_update: 3,
+                      insert_shop: 1,
+                      auth: 2,
+                      configure_webhooks: 1
 
   defmacro __using__(_opts) do
     quote do
@@ -167,13 +183,18 @@ defmodule ShopifexWeb.AuthController do
 
             shop = insert_shop(params)
 
-            Shopifex.Shops.configure_webhooks(shop)
+            configure_webhooks(shop)
 
             after_install(conn, shop, state)
 
           error ->
             raise(Shopifex.InstallError, message: "Installation failed for shop #{shop_url}")
         end
+      end
+
+      @impl ShopifexWeb.AuthController
+      def configure_webhooks(shop) do
+        Shopifex.Shops.configure_webhooks(shop)
       end
 
       @impl ShopifexWeb.AuthController
@@ -220,7 +241,11 @@ defmodule ShopifexWeb.AuthController do
         end
       end
 
-      defoverridable after_install: 3, after_update: 3, insert_shop: 1, auth: 2
+      defoverridable after_install: 3,
+                     after_update: 3,
+                     insert_shop: 1,
+                     auth: 2,
+                     configure_webhooks: 1
 
       defp build_external_url(path, query_params \\ %{}) do
         Path.join(path) <> "?" <> URI.encode_query(query_params)
