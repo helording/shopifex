@@ -42,12 +42,16 @@ defmodule Shopifex.Plug.PaymentGuard do
         Logger.info("Payment guard blocked request")
         redirect_after = URI.encode_www_form("#{conn.request_path}?#{conn.query_string}")
 
-        show_plans_url =
-          router_helpers().payment_path(conn, :show_plans, %{
+        base_path = "/payment/show-plans"
+
+        query =
+          URI.encode_query(%{
             guard_identifier: guard_identifier,
             redirect_after: redirect_after,
             token: Shopifex.Plug.session_token(conn)
           })
+
+        show_plans_url = base_path <> "?" <> query
 
         conn
         |> Phoenix.Controller.redirect(to: show_plans_url)
@@ -58,12 +62,4 @@ defmodule Shopifex.Plug.PaymentGuard do
         Plug.Conn.put_private(conn, :grant_for_guard, grant_for_guard)
     end
   end
-
-  defp router_helpers(),
-    do:
-      Module.concat([
-        Application.get_env(:shopifex, :web_module, ShopifexWeb),
-        Router,
-        Helpers
-      ])
 end
