@@ -38,8 +38,7 @@ defmodule Shopifex.Plug.ShopifySession do
     received_hmac = Shopifex.Plug.get_hmac(conn)
 
     if expected_hmac == received_hmac do
-      conn
-      |> do_new_session()
+      do_new_session(conn)
     else
       Logger.info("Invalid HMAC, expected #{expected_hmac}")
       respond_invalid(conn)
@@ -49,7 +48,9 @@ defmodule Shopifex.Plug.ShopifySession do
   defp do_new_session(conn = %{params: %{"shop" => shop_url}}) do
     case Shopifex.Shops.get_shop_by_url(shop_url) do
       nil ->
-        redirect_to_install(conn, shop_url)
+        conn
+        |> redirect(to: "/initialize-installation?#{conn.query_string}")
+        |> halt()
 
       shop ->
         locale = get_locale(conn)
@@ -59,14 +60,11 @@ defmodule Shopifex.Plug.ShopifySession do
     end
   end
 
-  defp redirect_to_install(conn, shop_url) do
-    Logger.info("Initiating shop installation for #{shop_url}")
-
-    install_url =
-      "https://#{shop_url}/admin/oauth/authorize?client_id=#{Application.fetch_env!(:shopifex, :api_key)}&scope=#{Application.fetch_env!(:shopifex, :scopes)}&redirect_uri=#{Application.fetch_env!(:shopifex, :redirect_uri)}"
-
+  defp respond_invalid(%Plug.Conn{private: %{phoenix_format: "json"}} = conn) do
     conn
-    |> redirect(external: install_url)
+    |> put_status(:forbidden)
+    |> put_view(ShopifexWeb.AuthView)
+    |> render("403.json", message: "Unauthorized")
     |> halt()
   end
 
