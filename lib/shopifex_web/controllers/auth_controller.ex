@@ -96,7 +96,7 @@ defmodule ShopifexWeb.AuthController do
                       configure_webhooks: 1
 
   defmacro __using__(_opts) do
-    quote do
+    quote location: :keep do
       @behaviour ShopifexWeb.AuthController
 
       require Logger
