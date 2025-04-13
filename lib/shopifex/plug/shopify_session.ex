@@ -70,6 +70,14 @@ defmodule Shopifex.Plug.ShopifySession do
     |> halt()
   end
 
+  defp respond_invalid(%Plug.Conn{private: %{phoenix_format: "json"}} = conn) do
+    conn
+    |> put_status(:forbidden)
+    |> put_view(ShopifexWeb.AuthView)
+    |> render("403.json", message: "Unauthorized")
+    |> halt()
+  end
+
   defp respond_invalid(conn) do
     conn
     |> put_view(ShopifexWeb.AuthView)
