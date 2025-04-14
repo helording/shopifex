@@ -267,7 +267,7 @@ defmodule ShopifexWeb.AuthController do
               |> Shopifex.Shops.get_shop_by_url()
               |> update_shop(params)
 
-            Shopifex.Shops.configure_webhooks(shop)
+            configure_webhooks(shop)
 
             after_update(conn, shop, state)
 
@@ -316,7 +316,8 @@ defmodule ShopifexWeb.AuthController do
                      after_update: 3,
                      insert_shop: 1,
                      update_shop: 2,
-                     auth: 2
+                     auth: 2,
+                     configure_webhooks: 1
     end
   end
 
