@@ -36,7 +36,6 @@ defmodule ShopifexWeb.Routes do
 
       pipeline :shopify_session do
         plug(Shopifex.Plug.ShopifySession)
-        plug(Shopifex.Plug.EnsureScopes)
         plug(Shopifex.Plug.LoadInIframe)
       end
 
@@ -62,7 +61,6 @@ defmodule ShopifexWeb.Routes do
         plug(Shopifex.Plug.FetchFlash)
         plug(Shopifex.Plug.LoadInIframe)
         plug(Shopifex.Plug.ShopifyWebhook)
-        plug(Shopifex.Plug.EnsureScopes)
       end
 
       pipeline :shopify_api do
