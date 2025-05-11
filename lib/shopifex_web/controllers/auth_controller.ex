@@ -199,7 +199,7 @@ defmodule ShopifexWeb.AuthController do
                   update_shop(shop, args)
               end
 
-            Shopifex.Shops.configure_webhooks(shop)
+            configure_webhooks(shop)
 
             after_callback(conn, shop, %{
               state: state,
